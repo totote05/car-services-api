@@ -6,5 +6,3 @@ filename: "{{.InterfaceName}}.go"
 mockname: "{{.InterfaceName}}"
 packages:
   car-services-api.totote05.ar/domain/adapters:
-    # config:
-    #   recursive: True
