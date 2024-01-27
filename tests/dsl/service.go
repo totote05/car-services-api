@@ -14,7 +14,7 @@ func NewValidServiceOne() entities.Service {
 	return entities.Service{
 		ID:   "123",
 		Name: "Service one",
-		Rercurrence: entities.ServiceRecurrence{
+		Rercurrence: &entities.ServiceRecurrence{
 			Kilometers: &kilometers,
 			Interval:   &interval,
 		},
@@ -26,7 +26,7 @@ func NewValidServiceTwo() entities.Service {
 	return entities.Service{
 		ID:   "456",
 		Name: "Service Two",
-		Rercurrence: entities.ServiceRecurrence{
+		Rercurrence: &entities.ServiceRecurrence{
 			Kilometers: &kilometers,
 		},
 	}
