@@ -1,2 +1,4 @@
-/tests/mocks
-/tests/dsl
+.*/tests/mocks/.*
+.*/tests/dsl/.*
+
+.*/entities/.*

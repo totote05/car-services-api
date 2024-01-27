@@ -7,9 +7,9 @@ import (
 	"car-services-api.totote05.ar/domain/adapters"
 	"car-services-api.totote05.ar/domain/entities"
 	"car-services-api.totote05.ar/domain/usecases"
+	"car-services-api.totote05.ar/tests/dsl"
 	"car-services-api.totote05.ar/tests/mocks"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestCreateServiceShouldFailByEmptyName(t *testing.T) {
@@ -30,7 +30,7 @@ func TestCreateServiceShouldFailByServiceError(t *testing.T) {
 	ctx := context.Background()
 
 	serviceAdapter := mocks.NewService(t)
-	serviceAdapter.On("Save", ctx, mock.Anything).Return(adapters.ErrPersisting)
+	serviceAdapter.On("Save", ctx, dsl.AnythingOfType(entities.Service{})).Return(adapters.ErrPersisting)
 
 	service := entities.Service{
 		Name: "dummy service",
@@ -52,7 +52,7 @@ func TestCreateServiceSuccess(t *testing.T) {
 	}
 
 	serviceAdapter := mocks.NewService(t)
-	serviceAdapter.On("Save", ctx, mock.AnythingOfType("entities.Service")).Return(nil)
+	serviceAdapter.On("Save", ctx, dsl.AnythingOfType(entities.Service{})).Return(nil)
 
 	usecase := usecases.NewCreateService(serviceAdapter)
 	result, err := usecase.Execute(ctx, service)

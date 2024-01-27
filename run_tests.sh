@@ -25,14 +25,19 @@ go test \
   -shuffle=on \
   -coverprofile="$COVERAGE_FILE" \
   -coverpkg=./... \
-  ./tests/usecases/...
+  ./...
 
 # Construir un patrón de grep para excluir líneas basadas en el archivo de ignorados
-IGNORE_PATTERN=$(grep -v '^#' "$COVERAGE_IGNORE" | sed 's/\//\\\//g' | sed 's/\./\\\./g' | tr '\n' '|')
-IGNORE_PATTERN="${IGNORE_PATTERN%|}"  # Elimina el último "|"
+IGNORE_PATTERN=$(grep -v '^[[:space:]]*$\|^\s*#' "$COVERAGE_IGNORE")
 
-# Filtra los resultados de cobertura excluyendo los patrones de ignorados
-cat "$COVERAGE_FILE" | grep -vE "$IGNORE_PATTERN" > "$COVERAGE_FILE_FILTERED"
+# Verificar si el patrón de ignorados está vacío
+if [ -n "$IGNORE_PATTERN" ]; then
+  # Filtra los resultados de cobertura excluyendo los patrones de ignorados
+  grep -vE "$IGNORE_PATTERN" "$COVERAGE_FILE" > "$COVERAGE_FILE_FILTERED"
+else
+  # Si el patrón está vacío, simplemente copia el archivo de cobertura
+  cp "$COVERAGE_FILE" "$COVERAGE_FILE_FILTERED"
+fi
 
 # Genera el resultado para la consola
 go tool cover -func=$COVERAGE_FILE_FILTERED

@@ -38,6 +38,7 @@ func TestGetVehicleNotFound(t *testing.T) {
 }
 
 func TestGetVehicleSuccess(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 
@@ -47,6 +48,6 @@ func TestGetVehicleSuccess(t *testing.T) {
 	usecase := usecases.NewGetVehicle(vehicleAdapter)
 	result, err := usecase.Execute(ctx, vehicle.ID)
 
-	assert.Nil(t, err)
-	assert.Equal(t, vehicle, *result)
+	assert.Nil(err)
+	assert.Equal(vehicle, *result)
 }

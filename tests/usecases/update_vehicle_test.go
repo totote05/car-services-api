@@ -23,6 +23,7 @@ func TestUpdateVehicleWithoutPlateShouldFail(t *testing.T) {
 }
 
 func TestUpdateVehicleAdapterFailOnGet(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 
 	vehicle := dsl.NewValidVehicleOne()
@@ -33,11 +34,12 @@ func TestUpdateVehicleAdapterFailOnGet(t *testing.T) {
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updatedVehicle, err := usecase.Execute(ctx, vehicle)
 
-	assert.Nil(t, updatedVehicle)
-	assert.ErrorIs(t, err, adapters.ErrGetting)
+	assert.Nil(updatedVehicle)
+	assert.ErrorIs(err, adapters.ErrGetting)
 }
 
 func TestUpdateVehicleNotFound(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 
@@ -47,11 +49,12 @@ func TestUpdateVehicleNotFound(t *testing.T) {
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updatedVehicle, err := usecase.Execute(ctx, vehicle)
 
-	assert.Nil(t, updatedVehicle)
-	assert.ErrorIs(t, err, adapters.ErrNotFound)
+	assert.Nil(updatedVehicle)
+	assert.ErrorIs(err, adapters.ErrNotFound)
 }
 
 func TestUpdateVehicleFailFindByPlate(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 
@@ -62,11 +65,12 @@ func TestUpdateVehicleFailFindByPlate(t *testing.T) {
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updatedVehicle, err := usecase.Execute(ctx, vehicle)
 
-	assert.Nil(t, updatedVehicle)
-	assert.ErrorIs(t, err, adapters.ErrGetting)
+	assert.Nil(updatedVehicle)
+	assert.ErrorIs(err, adapters.ErrGetting)
 }
 
 func TestUpdateVehicleFailByDuplicatedPlate(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 	toUpdate := dsl.UpdateValidVehicle(vehicle)
@@ -79,11 +83,12 @@ func TestUpdateVehicleFailByDuplicatedPlate(t *testing.T) {
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updateVehicle, err := usecase.Execute(ctx, toUpdate)
 
-	assert.Nil(t, updateVehicle)
-	assert.ErrorIs(t, err, usecases.ErrDuplicatedVehicle)
+	assert.Nil(updateVehicle)
+	assert.ErrorIs(err, usecases.ErrDuplicatedVehicle)
 }
 
 func TestUpdateVehicleAdapterFailOnSave(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 	toUpdate := dsl.UpdateValidVehicle(dsl.NewValidVehicleOne())
@@ -96,11 +101,12 @@ func TestUpdateVehicleAdapterFailOnSave(t *testing.T) {
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updatedVehicle, err := usecase.Execute(ctx, toUpdate)
 
-	assert.Nil(t, updatedVehicle)
-	assert.ErrorIs(t, err, adapters.ErrPersisting)
+	assert.Nil(updatedVehicle)
+	assert.ErrorIs(err, adapters.ErrPersisting)
 }
 
 func TestUpdateVehicleSuccess(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 	toUpdate := dsl.UpdateValidVehicle(dsl.NewValidVehicleOne())
@@ -113,6 +119,6 @@ func TestUpdateVehicleSuccess(t *testing.T) {
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updatedVehicle, err := usecase.Execute(ctx, toUpdate)
 
-	assert.Nil(t, err)
-	assert.Equal(t, &toUpdate, updatedVehicle)
+	assert.Nil(err)
+	assert.Equal(&toUpdate, updatedVehicle)
 }

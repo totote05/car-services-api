@@ -10,7 +10,6 @@ import (
 	"car-services-api.totote05.ar/tests/dsl"
 	"car-services-api.totote05.ar/tests/mocks"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestNewVehicleWithoutPlateShouldFail(t *testing.T) {
@@ -24,21 +23,22 @@ func TestNewVehicleWithoutPlateShouldFail(t *testing.T) {
 }
 
 func TestNewVehicleWithDuplicatedPlateShoulFail(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidCreateVehicle()
 
 	vehicleAdapter := mocks.NewVehicle(t)
 	vehicleAdapter.On("FindByPlate", ctx, vehicle.Plate).Return(nil, adapters.ErrNotFound).Once()
-	vehicleAdapter.On("Save", ctx, mock.Anything).Return(nil).Once()
+	vehicleAdapter.On("Save", ctx, dsl.AnythingOfType(vehicle)).Return(nil).Once()
 	vehicleAdapter.On("FindByPlate", ctx, vehicle.Plate).Return(&vehicle, nil).Once()
 
 	usecase := usecases.NewCreateVehicle(vehicleAdapter)
 
 	_, err := usecase.Execute(ctx, vehicle)
-	assert.Nil(t, err)
+	assert.Nil(err)
 
 	_, err = usecase.Execute(ctx, vehicle)
-	assert.ErrorIs(t, err, usecases.ErrDuplicatedVehicle)
+	assert.ErrorIs(err, usecases.ErrDuplicatedVehicle)
 }
 
 func TestNewVehicleAdapterFailOnFindByPlate(t *testing.T) {
@@ -60,7 +60,7 @@ func TestNewVehicleAdapterFailOnSave(t *testing.T) {
 
 	vehicleAdapter := mocks.NewVehicle(t)
 	vehicleAdapter.On("FindByPlate", ctx, vehicle.Plate).Return(nil, adapters.ErrNotFound).Once()
-	vehicleAdapter.On("Save", ctx, mock.Anything).Return(adapters.ErrPersisting)
+	vehicleAdapter.On("Save", ctx, dsl.AnythingOfType(vehicle)).Return(adapters.ErrPersisting)
 
 	usecase := usecases.NewCreateVehicle(vehicleAdapter)
 	_, err := usecase.Execute(ctx, vehicle)
@@ -69,16 +69,17 @@ func TestNewVehicleAdapterFailOnSave(t *testing.T) {
 }
 
 func TestNewVehicleShouldReturnNotEmptyID(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidCreateVehicle()
 
 	vehicleAdapter := mocks.NewVehicle(t)
 	vehicleAdapter.On("FindByPlate", ctx, vehicle.Plate).Return(&vehicle, adapters.ErrNotFound).Once()
-	vehicleAdapter.On("Save", ctx, mock.Anything).Return(nil)
+	vehicleAdapter.On("Save", ctx, dsl.AnythingOfType(vehicle)).Return(nil)
 
 	usecase := usecases.NewCreateVehicle(vehicleAdapter)
 	createdVehicle, err := usecase.Execute(ctx, vehicle)
 
-	assert.Nil(t, err)
-	assert.NotEmpty(t, createdVehicle.ID)
+	assert.Nil(err)
+	assert.NotEmpty(createdVehicle.ID)
 }

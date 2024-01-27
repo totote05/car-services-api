@@ -12,6 +12,7 @@ import (
 )
 
 func TestGetServicesSuccess(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 
 	expected := dsl.NewValidServiceList()
@@ -22,11 +23,12 @@ func TestGetServicesSuccess(t *testing.T) {
 
 	list, err := usecase.Execute(ctx)
 
-	assert.Nil(t, err)
-	assert.Equal(t, expected, list)
+	assert.Nil(err)
+	assert.Equal(expected, list)
 }
 
 func TestGetServicesFailAdapter(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 
 	serviceAdapter := mocks.NewService(t)
@@ -35,6 +37,6 @@ func TestGetServicesFailAdapter(t *testing.T) {
 	usecase := usecases.NewGetServices(serviceAdapter)
 	list, err := usecase.Execute(ctx)
 
-	assert.ErrorIs(t, err, adapters.ErrGetting)
-	assert.Nil(t, list)
+	assert.ErrorIs(err, adapters.ErrGetting)
+	assert.Nil(list)
 }
