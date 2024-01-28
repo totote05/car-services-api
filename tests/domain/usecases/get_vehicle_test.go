@@ -43,11 +43,11 @@ func TestGetVehicleSuccess(t *testing.T) {
 	vehicle := dsl.NewValidVehicleOne()
 
 	vehicleAdapter := mocks.NewVehicle(t)
-	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(&vehicle, nil)
+	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(vehicle, nil)
 
 	usecase := usecases.NewGetVehicle(vehicleAdapter)
 	result, err := usecase.Execute(ctx, vehicle.ID)
 
 	assert.Nil(err)
-	assert.Equal(vehicle, *result)
+	assert.Equal(vehicle, result)
 }

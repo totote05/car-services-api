@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+var (
+	ErrServiceHasEmptyName       = errors.New("empty name")
+	ErrServiceHasEmptyRecurrence = errors.New("should have at least one recurrence")
+)
+
 type (
 	Service struct {
 		ID          ServiceID          `json:"id"`
@@ -20,9 +25,13 @@ type (
 	ServiceID string
 )
 
-func (s Service) Validate() error {
+func (s *Service) Validate() error {
+	if s == nil {
+		return nil
+	}
+
 	if s.Name == "" {
-		return errors.New("empty name")
+		return ErrServiceHasEmptyName
 	}
 
 	if err := s.Rercurrence.Validate(); err != nil {
@@ -34,7 +43,7 @@ func (s Service) Validate() error {
 
 func (r *ServiceRecurrence) Validate() error {
 	if r != nil && r.Kilometers == nil && r.Interval == nil {
-		return errors.New("shoul have at least one recurrence")
+		return ErrServiceHasEmptyRecurrence
 	}
 
 	return nil

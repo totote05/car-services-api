@@ -16,13 +16,13 @@ func TestCreateServiceShouldFailByEmptyName(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	service := entities.Service{}
+	service := dsl.NewInvalidService()
 
 	usecase := usecases.NewCreateService(nil)
-	result, err := usecase.Execute(ctx, service)
+	result, err := usecase.Execute(ctx, *service)
 
 	assert.Nil(result)
-	assert.ErrorContains(err, "empty name")
+	assert.ErrorIs(err, entities.ErrServiceHasEmptyName)
 }
 
 func TestCreateServiceShouldFailByServiceError(t *testing.T) {
@@ -32,12 +32,10 @@ func TestCreateServiceShouldFailByServiceError(t *testing.T) {
 	serviceAdapter := mocks.NewService(t)
 	serviceAdapter.On("Save", ctx, dsl.AnythingOfType(entities.Service{})).Return(adapters.ErrPersisting)
 
-	service := entities.Service{
-		Name: "dummy service",
-	}
+	service := dsl.NewValidService()
 
 	usecase := usecases.NewCreateService(serviceAdapter)
-	result, err := usecase.Execute(ctx, service)
+	result, err := usecase.Execute(ctx, *service)
 
 	assert.Nil(result)
 	assert.ErrorIs(err, adapters.ErrPersisting)
@@ -47,16 +45,27 @@ func TestCreateServiceSuccess(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	service := entities.Service{
-		Name: "dummy service",
-	}
+	service := dsl.NewValidServiceOne()
 
 	serviceAdapter := mocks.NewService(t)
 	serviceAdapter.On("Save", ctx, dsl.AnythingOfType(entities.Service{})).Return(nil)
 
 	usecase := usecases.NewCreateService(serviceAdapter)
-	result, err := usecase.Execute(ctx, service)
+	result, err := usecase.Execute(ctx, *service)
 
 	assert.Nil(err)
 	assert.NotEmpty(result.ID)
+}
+
+func TestCreateServiceFailByInvalidRecurrences(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+
+	service := dsl.NewValidServiceWithInvalidRecurrence()
+
+	usecase := usecases.NewCreateService(nil)
+	result, err := usecase.Execute(ctx, *service)
+
+	assert.Nil(result)
+	assert.ErrorIs(err, entities.ErrServiceHasEmptyRecurrence)
 }

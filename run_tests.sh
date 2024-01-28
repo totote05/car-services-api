@@ -19,16 +19,26 @@ if [ -d "$COVERAGE_DIR" ]; then
   rm -rf "$COVERAGE_DIR"/*
 fi
 
+# Lista de paquetes por defecto
+PKGS="./..."
+
+# Construye un patrón de grep para excluir líneas basadas en el archivo de ignorados
+IGNORE_PATTERN=$(grep -v '^[[:space:]]*$\|^\s*#' "$COVERAGE_IGNORE")
+
+# Si el patrón de ignorados no está vacío, se genera la lista de paquetes para el coverage
+if [ -n "$IGNORE_PATTERN" ]; then
+  # Se crea una lista separada por "," de los paquetes deseados filtrando los ignorados
+  PKGS=$(go list ./... | grep -vE "$IGNORE_PATTERN" | tr '\n' ',' | sed 's/,$//')
+fi
+
 # Ejecuta los tests con coverage
 go test \
   -race \
   -shuffle=on \
   -coverprofile="$COVERAGE_FILE" \
-  -coverpkg=./... \
+  -coverpkg="$PKGS" \
   ./...
 
-# Construir un patrón de grep para excluir líneas basadas en el archivo de ignorados
-IGNORE_PATTERN=$(grep -v '^[[:space:]]*$\|^\s*#' "$COVERAGE_IGNORE")
 
 # Verificar si el patrón de ignorados está vacío
 if [ -n "$IGNORE_PATTERN" ]; then
@@ -47,10 +57,10 @@ if [ -z "$CI" ] || [ "$CI" != "true" ]; then
   gocov convert $COVERAGE_FILE_FILTERED | gocov-html -t kit > $COVERAGE_REPORT
 fi
 
-# Obtén el porcentaje de cobertura total
+# Obtiene el porcentaje total de la cobertura
 COVERAGE_PERCENTAGE=$(go tool cover -func=$COVERAGE_FILE_FILTERED | grep total | awk '{print int($3)}')
 
-# Mensajes según el porcentaje de cobertura
+# Muestra un mensajes según el porcentaje de cobertura
 if [ "$COVERAGE_PERCENTAGE" -eq 100 ]; then
   echo "Wow! 100% coverage, it's awesome! 😍"
 elif [ "$COVERAGE_PERCENTAGE" -ge 80 ]; then
