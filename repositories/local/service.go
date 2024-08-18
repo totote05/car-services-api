@@ -24,7 +24,11 @@ func (r *Service) FindByName(ctx context.Context, Name string) ([]entities.Servi
 }
 
 func (r *Service) Get(ctx context.Context, ID entities.ServiceID) (*entities.Service, error) {
-	panic("unimplemented")
+	if service, ok := r.storage[ID]; ok {
+		return &service, nil
+	}
+
+	return nil, adapters.ErrNotFound
 }
 
 func (r *Service) GetAll(ctx context.Context) ([]entities.Service, error) {
@@ -37,5 +41,6 @@ func (r *Service) GetAll(ctx context.Context) ([]entities.Service, error) {
 }
 
 func (r *Service) Save(ctx context.Context, service entities.Service) error {
-	panic("unimplemented")
+	r.storage[service.ID] = service
+	return nil
 }

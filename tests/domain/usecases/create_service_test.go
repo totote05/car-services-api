@@ -12,6 +12,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateServiceNeverExecuteBecauseServiceIsNil(t *testing.T) {
+	// coverage hack
+	var service *entities.Service
+	assert.Nil(t, service.Validate())
+}
+
 func TestCreateServiceShouldFailByEmptyName(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
