@@ -14,6 +14,24 @@ type Service struct {
 	mock.Mock
 }
 
+// Delete provides a mock function with given fields: ctx, ID
+func (_m *Service) Delete(ctx context.Context, ID entities.ServiceID) error {
+	ret := _m.Called(ctx, ID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, entities.ServiceID) error); ok {
+		r0 = rf(ctx, ID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // FindByName provides a mock function with given fields: ctx, Name
 func (_m *Service) FindByName(ctx context.Context, Name string) ([]entities.Service, error) {
 	ret := _m.Called(ctx, Name)

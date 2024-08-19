@@ -29,6 +29,7 @@ func AddServiceHandler(router *gin.Engine, serviceAdapter adapters.Service) {
 	group.POST("/", handlers.Create)
 	group.GET("/:id", handlers.Get)
 	group.PUT("/:id", handlers.Update)
+	group.DELETE("/:id", handlers.Delete)
 }
 
 func (h *serviceHandler) List(c *gin.Context) {
@@ -109,6 +110,23 @@ func (h *serviceHandler) Update(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, result)
+}
+
+func (h *serviceHandler) Delete(c *gin.Context) {
+	serviceID, err := h.getServiceParam(c)
+	if err != nil {
+		HandleError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	usecase := usecases.NewDeleteService(h.serviceAdapter)
+	err = usecase.Execute(c, serviceID)
+	if err != nil {
+		HandleError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func (h *serviceHandler) getServiceParam(c *gin.Context) (entities.ServiceID, error) {

@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 
 	"car-services-api.totote05.ar/domain/adapters"
 	"car-services-api.totote05.ar/domain/entities"
@@ -19,7 +20,16 @@ func NewUpdateService(serviceAdapter adapters.Service) UpdateService {
 
 func (u UpdateService) Execute(ctx context.Context, service entities.Service) (*entities.Service, error) {
 	if err := service.Validate(); err != nil {
+		return nil, ErrInvalidServiceData
+	}
+
+	founded, err := u.serviceAdapter.FindByName(ctx, service.Name)
+	if err != nil && !errors.Is(adapters.ErrNotFound, err) {
 		return nil, err
+	}
+
+	if len(founded) > 0 && founded[0].ID != service.ID {
+		return nil, ErrDuplicatedService
 	}
 
 	if _, err := u.serviceAdapter.Get(ctx, service.ID); err != nil {

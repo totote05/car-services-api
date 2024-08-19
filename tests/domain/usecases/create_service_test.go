@@ -28,17 +28,17 @@ func TestCreateServiceShouldFailByEmptyName(t *testing.T) {
 	result, err := usecase.Execute(ctx, *service)
 
 	assert.Nil(result)
-	assert.ErrorIs(err, entities.ErrServiceHasEmptyName)
+	assert.ErrorIs(err, usecases.ErrInvalidServiceData)
 }
 
 func TestCreateServiceShouldFailByServiceError(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
+	service := dsl.NewValidService()
 
 	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return(nil, adapters.ErrNotFound)
 	serviceAdapter.On("Save", ctx, dsl.AnythingOfType(entities.Service{})).Return(adapters.ErrPersisting)
-
-	service := dsl.NewValidService()
 
 	usecase := usecases.NewCreateService(serviceAdapter)
 	result, err := usecase.Execute(ctx, *service)
@@ -54,6 +54,7 @@ func TestCreateServiceSuccess(t *testing.T) {
 	service := dsl.NewValidServiceOne()
 
 	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return(nil, adapters.ErrNotFound)
 	serviceAdapter.On("Save", ctx, dsl.AnythingOfType(entities.Service{})).Return(nil)
 
 	usecase := usecases.NewCreateService(serviceAdapter)
@@ -73,5 +74,37 @@ func TestCreateServiceFailByInvalidRecurrences(t *testing.T) {
 	result, err := usecase.Execute(ctx, *service)
 
 	assert.Nil(result)
-	assert.ErrorIs(err, entities.ErrServiceHasEmptyRecurrence)
+	assert.ErrorIs(err, usecases.ErrInvalidServiceData)
+}
+
+func TestCreateServiceShouldFailByDuplicatedName(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+
+	service := dsl.NewValidServiceOne()
+
+	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return([]entities.Service{*service}, nil)
+
+	usecase := usecases.NewCreateService(serviceAdapter)
+	result, err := usecase.Execute(ctx, *service)
+
+	assert.Nil(result)
+	assert.ErrorIs(err, usecases.ErrDuplicatedService)
+}
+
+func TestCreateServiceFailOnFindByName(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+
+	service := dsl.NewValidServiceOne()
+
+	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return(nil, adapters.ErrGetting)
+
+	usecase := usecases.NewCreateService(serviceAdapter)
+	result, err := usecase.Execute(ctx, *service)
+
+	assert.Nil(result)
+	assert.ErrorIs(err, adapters.ErrGetting)
 }

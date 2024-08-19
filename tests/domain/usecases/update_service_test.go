@@ -19,7 +19,7 @@ func TestUpdateServiceWithoutNameShouldFail(t *testing.T) {
 	usecase := usecases.NewUpdateService(nil)
 	_, err := usecase.Execute(ctx, *service)
 
-	assert.ErrorIs(t, err, entities.ErrServiceHasEmptyName)
+	assert.ErrorIs(t, err, usecases.ErrInvalidServiceData)
 }
 
 func TestUpdateServiceAdapterFailOnGet(t *testing.T) {
@@ -29,6 +29,7 @@ func TestUpdateServiceAdapterFailOnGet(t *testing.T) {
 	service := dsl.NewValidServiceOne()
 
 	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return(nil, adapters.ErrNotFound).Once()
 	serviceAdapter.On("Get", ctx, service.ID).Return(nil, adapters.ErrGetting).Once()
 
 	usecase := usecases.NewUpdateService(serviceAdapter)
@@ -44,6 +45,7 @@ func TestUpdateServiceNotFound(t *testing.T) {
 	service := dsl.NewValidServiceOne()
 
 	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return(nil, adapters.ErrNotFound).Once()
 	serviceAdapter.On("Get", ctx, service.ID).Return(nil, adapters.ErrNotFound)
 
 	usecase := usecases.NewUpdateService(serviceAdapter)
@@ -59,6 +61,7 @@ func TestUpdateServiceFailOnSave(t *testing.T) {
 	service := dsl.NewValidServiceOne()
 
 	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return(nil, adapters.ErrNotFound).Once()
 	serviceAdapter.On("Get", ctx, service.ID).Return(service, nil)
 	serviceAdapter.On("Save", ctx, *service).Return(adapters.ErrPersisting).Once()
 
@@ -69,12 +72,28 @@ func TestUpdateServiceFailOnSave(t *testing.T) {
 	assert.ErrorIs(err, adapters.ErrPersisting)
 }
 
+func TestUpdateServiceFailOnFindByName(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+	service := dsl.NewValidServiceOne()
+
+	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return(nil, adapters.ErrGetting).Once()
+
+	usecase := usecases.NewUpdateService(serviceAdapter)
+	updatedService, err := usecase.Execute(ctx, *service)
+
+	assert.Nil(updatedService)
+	assert.ErrorIs(err, adapters.ErrGetting)
+}
+
 func TestUpdateServiceSuccess(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 	service := dsl.NewValidServiceOne()
 
 	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return(nil, adapters.ErrNotFound)
 	serviceAdapter.On("Get", ctx, service.ID).Return(service, nil)
 	serviceAdapter.On("Save", ctx, *service).Return(nil).Once()
 
@@ -83,4 +102,20 @@ func TestUpdateServiceSuccess(t *testing.T) {
 
 	assert.Equal(service, updatedService)
 	assert.Nil(err)
+}
+
+func TestUpdateServiceFailByDuplicatedName(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+	service := dsl.NewValidServiceOne()
+	serviceTwo := dsl.NewValidServiceTwo()
+
+	serviceAdapter := mocks.NewService(t)
+	serviceAdapter.On("FindByName", ctx, service.Name).Return([]entities.Service{*serviceTwo}, nil)
+
+	usecase := usecases.NewUpdateService(serviceAdapter)
+	updatedService, err := usecase.Execute(ctx, *service)
+
+	assert.Nil(updatedService)
+	assert.ErrorIs(err, usecases.ErrDuplicatedService)
 }
