@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"car-services-api.totote05.ar/domain/adapters"
-	"car-services-api.totote05.ar/domain/entities"
 	"car-services-api.totote05.ar/domain/usecases"
 	"car-services-api.totote05.ar/tests/dsl"
 	"car-services-api.totote05.ar/tests/mocks"
@@ -14,15 +13,16 @@ import (
 
 func TestUpdateVehicleWithoutPlateShouldFail(t *testing.T) {
 	ctx := context.Background()
-	vehicle := entities.Vehicle{}
+	vehicle := dsl.NewInvalidVehicle()
 
 	usecase := usecases.NewUpdateVehicle(nil)
-	_, err := usecase.Execute(ctx, vehicle)
+	_, err := usecase.Execute(ctx, *vehicle)
 
 	assert.ErrorIs(t, err, usecases.ErrInvalidVehicleData)
 }
 
 func TestUpdateVehicleAdapterFailOnGet(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 
 	vehicle := dsl.NewValidVehicleOne()
@@ -31,13 +31,14 @@ func TestUpdateVehicleAdapterFailOnGet(t *testing.T) {
 	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(nil, adapters.ErrGetting).Once()
 
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
-	updatedVehicle, err := usecase.Execute(ctx, vehicle)
+	updatedVehicle, err := usecase.Execute(ctx, *vehicle)
 
-	assert.Nil(t, updatedVehicle)
-	assert.ErrorIs(t, err, adapters.ErrGetting)
+	assert.Nil(updatedVehicle)
+	assert.ErrorIs(err, adapters.ErrGetting)
 }
 
 func TestUpdateVehicleNotFound(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 
@@ -45,74 +46,78 @@ func TestUpdateVehicleNotFound(t *testing.T) {
 	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(nil, adapters.ErrNotFound)
 
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
-	updatedVehicle, err := usecase.Execute(ctx, vehicle)
+	updatedVehicle, err := usecase.Execute(ctx, *vehicle)
 
-	assert.Nil(t, updatedVehicle)
-	assert.ErrorIs(t, err, adapters.ErrNotFound)
+	assert.Nil(updatedVehicle)
+	assert.ErrorIs(err, adapters.ErrNotFound)
 }
 
 func TestUpdateVehicleFailFindByPlate(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 
 	vehicleAdapter := mocks.NewVehicle(t)
-	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(&vehicle, nil)
+	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(vehicle, nil)
 	vehicleAdapter.On("FindByPlate", ctx, vehicle.Plate).Return(nil, adapters.ErrGetting)
 
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
-	updatedVehicle, err := usecase.Execute(ctx, vehicle)
+	updatedVehicle, err := usecase.Execute(ctx, *vehicle)
 
-	assert.Nil(t, updatedVehicle)
-	assert.ErrorIs(t, err, adapters.ErrGetting)
+	assert.Nil(updatedVehicle)
+	assert.ErrorIs(err, adapters.ErrGetting)
 }
 
 func TestUpdateVehicleFailByDuplicatedPlate(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
-	toUpdate := dsl.UpdateValidVehicle(vehicle)
-	vehicleTwo := dsl.UpdateValidVehicle(dsl.NewValidVehicleTwo())
+	toUpdate := dsl.UpdateValidVehicle(*vehicle)
+	vehicleTwo := dsl.UpdateValidVehicle(*dsl.NewValidVehicleTwo())
 
 	vehicleAdapter := mocks.NewVehicle(t)
-	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(&vehicle, nil)
+	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(vehicle, nil)
 	vehicleAdapter.On("FindByPlate", ctx, toUpdate.Plate).Return(&vehicleTwo, nil)
 
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updateVehicle, err := usecase.Execute(ctx, toUpdate)
 
-	assert.Nil(t, updateVehicle)
-	assert.ErrorIs(t, err, usecases.ErrDuplicatedVehicle)
+	assert.Nil(updateVehicle)
+	assert.ErrorIs(err, usecases.ErrDuplicatedVehicle)
 }
 
 func TestUpdateVehicleAdapterFailOnSave(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
-	toUpdate := dsl.UpdateValidVehicle(dsl.NewValidVehicleOne())
+	toUpdate := dsl.UpdateValidVehicle(*dsl.NewValidVehicleOne())
 
 	vehicleAdapter := mocks.NewVehicle(t)
-	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(&vehicle, nil).Once()
+	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(vehicle, nil).Once()
 	vehicleAdapter.On("FindByPlate", ctx, toUpdate.Plate).Return(nil, adapters.ErrNotFound).Once()
 	vehicleAdapter.On("Save", ctx, toUpdate).Return(adapters.ErrPersisting)
 
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updatedVehicle, err := usecase.Execute(ctx, toUpdate)
 
-	assert.Nil(t, updatedVehicle)
-	assert.ErrorIs(t, err, adapters.ErrPersisting)
+	assert.Nil(updatedVehicle)
+	assert.ErrorIs(err, adapters.ErrPersisting)
 }
 
 func TestUpdateVehicleSuccess(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
-	toUpdate := dsl.UpdateValidVehicle(dsl.NewValidVehicleOne())
+	toUpdate := dsl.UpdateValidVehicle(*dsl.NewValidVehicleOne())
 
 	vehicleAdapter := mocks.NewVehicle(t)
-	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(&vehicle, nil).Once()
+	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(vehicle, nil).Once()
 	vehicleAdapter.On("FindByPlate", ctx, toUpdate.Plate).Return(nil, adapters.ErrNotFound).Once()
 	vehicleAdapter.On("Save", ctx, toUpdate).Return(nil)
 
 	usecase := usecases.NewUpdateVehicle(vehicleAdapter)
 	updatedVehicle, err := usecase.Execute(ctx, toUpdate)
 
-	assert.Nil(t, err)
-	assert.Equal(t, &toUpdate, updatedVehicle)
+	assert.Nil(err)
+	assert.Equal(&toUpdate, updatedVehicle)
 }

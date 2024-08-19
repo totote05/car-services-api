@@ -24,6 +24,7 @@ func TestGetVehiclesAdapterFail(t *testing.T) {
 }
 
 func TestGetVehiclesSuccess(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicles := dsl.NewValidVehicleList()
 
@@ -33,6 +34,6 @@ func TestGetVehiclesSuccess(t *testing.T) {
 	usecase := usecases.NewGetVehicles(vehicleAdapter)
 	list, err := usecase.Execute(ctx)
 
-	assert.Nil(t, err)
-	assert.Equal(t, vehicles, list)
+	assert.Nil(err)
+	assert.Equal(vehicles, list)
 }

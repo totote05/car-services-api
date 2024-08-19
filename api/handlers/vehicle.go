@@ -16,20 +16,16 @@ var (
 
 type (
 	Vehicle struct {
-		router         *gin.Engine
 		vehicleAdapter adapters.Vehicle
 	}
 )
 
-func NewVehicleHandler(router *gin.Engine, vehicleAdapter adapters.Vehicle) Vehicle {
-	return Vehicle{
-		router:         router,
+func AddVehicleHandler(router *gin.Engine, vehicleAdapter adapters.Vehicle) {
+	h := Vehicle{
 		vehicleAdapter: vehicleAdapter,
 	}
-}
 
-func (h Vehicle) Init() {
-	group := h.router.Group("/vehicle")
+	group := router.Group("/vehicle")
 	group.GET("/", h.List)
 	group.POST("/", h.Create)
 	group.GET("/:id", h.Get)
@@ -136,7 +132,7 @@ func (h Vehicle) Remove(c *gin.Context) {
 		return
 	}
 
-	c.Status(200)
+	c.Status(http.StatusOK)
 }
 
 func (h Vehicle) List(c *gin.Context) {

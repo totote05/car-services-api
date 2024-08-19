@@ -1,2 +1,6 @@
-/tests/mocks
-/tests/dsl
+# Ejemplo de uso
+# .*/tests/.*
+
+.*/tests/.*
+.*/repositories/.*
+.*/api/.*

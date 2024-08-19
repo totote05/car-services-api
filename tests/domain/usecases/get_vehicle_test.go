@@ -38,15 +38,16 @@ func TestGetVehicleNotFound(t *testing.T) {
 }
 
 func TestGetVehicleSuccess(t *testing.T) {
+	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
 
 	vehicleAdapter := mocks.NewVehicle(t)
-	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(&vehicle, nil)
+	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(vehicle, nil)
 
 	usecase := usecases.NewGetVehicle(vehicleAdapter)
 	result, err := usecase.Execute(ctx, vehicle.ID)
 
-	assert.Nil(t, err)
-	assert.Equal(t, vehicle, *result)
+	assert.Nil(err)
+	assert.Equal(vehicle, result)
 }
