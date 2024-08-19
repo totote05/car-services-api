@@ -24,10 +24,11 @@ func AddServiceHandler(router *gin.Engine, serviceAdapter adapters.Service) {
 	handlers := serviceHandler{
 		serviceAdapter: serviceAdapter,
 	}
-	serviceRouter := router.Group("/service")
-	serviceRouter.GET("/", handlers.List)
-	serviceRouter.POST("/", handlers.Create)
-	serviceRouter.GET("/:id", handlers.Get)
+	group := router.Group("/service")
+	group.GET("/", handlers.List)
+	group.POST("/", handlers.Create)
+	group.GET("/:id", handlers.Get)
+	group.PUT("/:id", handlers.Update)
 }
 
 func (h *serviceHandler) List(c *gin.Context) {
@@ -66,9 +67,9 @@ func (h *serviceHandler) Create(c *gin.Context) {
 }
 
 func (h *serviceHandler) Get(c *gin.Context) {
-	id, ok := c.Params.Get("id")
-	if !ok {
-		HandleError(c, http.StatusBadRequest, ErrMissinServiceID)
+	id, err := h.getServiceParam(c)
+	if err != nil {
+		HandleError(c, http.StatusBadRequest, err)
 	}
 
 	serviceID := entities.ServiceID(id)
@@ -80,4 +81,47 @@ func (h *serviceHandler) Get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, result)
+}
+
+func (h *serviceHandler) Update(c *gin.Context) {
+	service := &entities.Service{}
+	if err := c.Bind(service); err != nil {
+		HandleError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	serviceID, err := h.getServiceParam(c)
+	if err != nil {
+		HandleError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	if serviceID != service.ID {
+		HandleError(c, http.StatusBadRequest, errors.New("service id does not match"))
+		return
+	}
+
+	usecase := usecases.NewUpdateService(h.serviceAdapter)
+	result, err := usecase.Execute(c, *service)
+	if err != nil {
+		HandleError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+func (h *serviceHandler) getServiceParam(c *gin.Context) (entities.ServiceID, error) {
+	var (
+		serviceID entities.ServiceID
+		err       error
+	)
+
+	id, ok := c.Params.Get("id")
+	serviceID = entities.ServiceID(id)
+	if !ok {
+		err = ErrMissinServiceID
+	}
+
+	return serviceID, err
 }

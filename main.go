@@ -10,8 +10,7 @@ func main() {
 	router := gin.Default()
 
 	vehicleAdapter := local.NewVehicle()
-	vehicleHandler := handlers.NewVehicleHandler(router, vehicleAdapter)
-	vehicleHandler.Init()
+	handlers.AddVehicleHandler(router, vehicleAdapter)
 
 	serviceAdapter := local.NewService()
 	handlers.AddServiceHandler(router, serviceAdapter)
