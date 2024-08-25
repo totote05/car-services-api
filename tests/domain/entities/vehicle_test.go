@@ -9,6 +9,8 @@ import (
 )
 
 func TestValidateVehicle(t *testing.T) {
+	invalidVehicle := dsl.NewInvalidVehicle()
+	validVehicle := dsl.NewValidVehicleOne()
 	assert := assert.New(t)
 	suite := []struct {
 		name     string
@@ -16,8 +18,8 @@ func TestValidateVehicle(t *testing.T) {
 		expected error
 	}{
 		{"nil vehicle should not have error", nil, nil},
-		{"empty plate fail with message 'empty plate'", dsl.NewInvalidVehicle(), entities.ErrVehicleHasEmptyPlate},
-		{"valid vehicle should have not error", dsl.NewValidVehicleOne(), nil},
+		{"empty plate fail with message 'empty plate'", &invalidVehicle, entities.ErrVehicleHasEmptyPlate},
+		{"valid vehicle should have not error", &validVehicle, nil},
 	}
 
 	for _, test := range suite {

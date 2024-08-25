@@ -1,6 +1,7 @@
 # Ejemplo de uso
 # .*/tests/.*
 
+.*/main.go
 .*/tests/.*
 .*/repositories/.*
 .*/api/.*

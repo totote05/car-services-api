@@ -7,140 +7,132 @@ import (
 	"car-services-api.totote05.ar/domain/adapters"
 	"car-services-api.totote05.ar/domain/entities"
 	"car-services-api.totote05.ar/domain/usecases"
-	"github.com/gin-gonic/gin"
-)
-
-var (
-	ErrMissingVehicleID = errors.New("error missing vehicle id")
 )
 
 type (
-	Vehicle struct {
+	VehicleHandler interface {
+		List(w http.ResponseWriter, r *http.Request)
+		Create(w http.ResponseWriter, r *http.Request)
+		Get(w http.ResponseWriter, r *http.Request)
+		Update(w http.ResponseWriter, r *http.Request)
+		Delete(w http.ResponseWriter, r *http.Request)
+	}
+
+	vehicleHandler struct {
 		vehicleAdapter adapters.Vehicle
 	}
 )
 
-func AddVehicleHandler(router *gin.Engine, vehicleAdapter adapters.Vehicle) {
-	h := Vehicle{
+func NewVehicleHandler(vehicleAdapter adapters.Vehicle) VehicleHandler {
+	return &vehicleHandler{
 		vehicleAdapter: vehicleAdapter,
 	}
-
-	group := router.Group("/vehicle")
-	group.GET("/", h.List)
-	group.POST("/", h.Create)
-	group.GET("/:id", h.Get)
-	group.PUT("/:id", h.Update)
-	group.DELETE("/:id", h.Remove)
 }
 
-func (h Vehicle) getVehicleParam(c *gin.Context) (entities.VehicleID, error) {
-	var (
-		vehicleID entities.VehicleID
-		err       error
-	)
-
-	id, ok := c.Params.Get("id")
-	vehicleID = entities.VehicleID(id)
-	if !ok {
-		err = ErrMissingVehicleID
+func (h vehicleHandler) List(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	usecase := usecases.NewGetVehicles(h.vehicleAdapter)
+	list, err := usecase.Execute(c)
+	if err != nil {
+		InternalServerError(w, err)
+		return
 	}
-
-	return vehicleID, err
+	JSON(w, http.StatusCreated, list)
 }
 
-func (h Vehicle) Create(c *gin.Context) {
-	vehicle := entities.Vehicle{}
-	if err := c.Bind(&vehicle); err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+func (h vehicleHandler) Create(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	vehicle, err := GetBody[entities.Vehicle](r)
+	if err != nil {
+		BadRequest(w, err)
 		return
 	}
 
 	usecase := usecases.NewCreateVehicle(h.vehicleAdapter)
 	created, err := usecase.Execute(c, vehicle)
 	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, created)
+	JSON(w, http.StatusCreated, created)
 }
 
-func (h Vehicle) Get(c *gin.Context) {
-	vehicleID, err := h.getVehicleParam(c)
+func (h vehicleHandler) Get(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	id, err := GetID(r)
 	if err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+		BadRequest(w, err)
 		return
 	}
+
+	vehicleID := entities.VehicleID(id)
 
 	usecase := usecases.NewGetVehicle(h.vehicleAdapter)
 	vehicle, err := usecase.Execute(c, vehicleID)
 
 	if errors.Is(err, adapters.ErrNotFound) {
-		HandleError(c, http.StatusNotFound, err)
+		NotFound(w, err)
 		return
 	}
 
 	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, vehicle)
+	JSON(w, http.StatusCreated, vehicle)
 }
 
-func (h Vehicle) Update(c *gin.Context) {
-	vehicleID, err := h.getVehicleParam(c)
+func (h vehicleHandler) Update(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	id, err := GetID(r)
 	if err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+		BadRequest(w, err)
 		return
 	}
 
-	vehicle := entities.Vehicle{}
-	if err := c.Bind(&vehicle); err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+	vehicle, err := GetBody[entities.Vehicle](r)
+	if err != nil {
+		BadRequest(w, err)
 		return
 	}
 
-	vehicle.ID = vehicleID
+	if vehicle.ID != entities.VehicleID(id) {
+		BadRequest(w, errors.New("vehicle id does not match"))
+		return
+	}
 
 	usecase := usecases.NewUpdateVehicle(h.vehicleAdapter)
 	updatedVehicle, err := usecase.Execute(c, vehicle)
 
 	if errors.Is(err, adapters.ErrNotFound) {
-		HandleError(c, http.StatusNotFound, err)
+		NotFound(w, err)
 		return
 	}
 
 	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, updatedVehicle)
+	JSON(w, http.StatusCreated, updatedVehicle)
 }
 
-func (h Vehicle) Remove(c *gin.Context) {
-	vehicleID, err := h.getVehicleParam(c)
+func (h vehicleHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	id, err := GetID(r)
 	if err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+		BadRequest(w, err)
 		return
 	}
 
+	vehicleID := entities.VehicleID(id)
 	usecase := usecases.NewDeleteVehicle(h.vehicleAdapter)
 	if err := usecase.Execute(c, vehicleID); err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	c.Status(http.StatusOK)
-}
-
-func (h Vehicle) List(c *gin.Context) {
-	usecase := usecases.NewGetVehicles(h.vehicleAdapter)
-	list, err := usecase.Execute(c)
-	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, list)
+	w.WriteHeader(http.StatusOK)
 }

@@ -1,6 +1,6 @@
 module car-services-api.totote05.ar
 
-go 1.21
+go 1.23
 
 require (
 	github.com/aidarkhanov/nanoid v1.0.8
