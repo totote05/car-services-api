@@ -30,7 +30,7 @@ func (uc CreateVehicle) Execute(ctx context.Context, vehicle entities.Vehicle) (
 
 	if err == nil {
 		return nil, ErrDuplicatedVehicle
-	} else if !errors.Is(adapters.ErrNotFound, err) {
+	} else if !errors.Is(err, adapters.ErrNotFound) {
 		return nil, err
 	}
 

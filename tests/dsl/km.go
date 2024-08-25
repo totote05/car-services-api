@@ -10,6 +10,7 @@ var initialDate = time.Now()
 
 func NewValidKmOne() entities.Km {
 	return entities.Km{
+		ID:    entities.KmID("1"),
 		Value: 1000,
 		Date:  initialDate,
 	}
@@ -17,6 +18,7 @@ func NewValidKmOne() entities.Km {
 
 func NewValidKmTwo() entities.Km {
 	return entities.Km{
+		ID:    entities.KmID("2"),
 		Value: 1050,
 		Date:  initialDate.Add(time.Hour),
 	}
@@ -24,6 +26,7 @@ func NewValidKmTwo() entities.Km {
 
 func NewInvalidKm() entities.Km {
 	return entities.Km{
+		ID:    entities.KmID("3"),
 		Value: 1001,
 		Date:  initialDate.Add(-time.Hour),
 	}
@@ -31,7 +34,24 @@ func NewInvalidKm() entities.Km {
 
 func NewInvalidKmTwo() entities.Km {
 	return entities.Km{
+		ID:    entities.KmID("4"),
 		Value: 1060,
 		Date:  initialDate.Add(time.Minute * 30),
+	}
+}
+
+func NewInvalidKmThree() entities.Km {
+	return entities.Km{
+		ID:    entities.KmID("5"),
+		Value: 1000,
+		Date:  initialDate.Add(time.Minute * 30),
+	}
+}
+
+func NewInvalidKmFour() entities.Km {
+	return entities.Km{
+		ID:    entities.KmID("6"),
+		Value: 1060,
+		Date:  initialDate,
 	}
 }

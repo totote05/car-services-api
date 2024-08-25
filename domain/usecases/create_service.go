@@ -27,7 +27,7 @@ func (s CreateSerice) Execute(ctx context.Context, service entities.Service) (*e
 	}
 
 	founded, err := s.serviceAdapter.FindByName(ctx, service.Name)
-	if err != nil && !errors.Is(adapters.ErrNotFound, err) {
+	if err != nil && !errors.Is(err, adapters.ErrNotFound) {
 		return nil, err
 	}
 

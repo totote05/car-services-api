@@ -31,23 +31,22 @@ func NewKmHandler(kmAdapter adapters.Km, vehicleAdapter adapters.Vehicle) KmHand
 }
 
 func (h kmHandler) List(w http.ResponseWriter, r *http.Request) {
-	// c := r.Context()
-	// id, err := GetID(r)
-	// if err != nil {
-	// 	BadRequest(w, err)
-	// 	return
-	// }
+	c := r.Context()
+	id, err := GetID(r)
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
 
-	// vehicleID := entities.VehicleID(id)
-	// usecase := usecases.NewGetKms(h.kmAdapter, h.vehicleAdapter)
-	// list, err := usecase.Execute(c, vehicleID)
-	// if err != nil {
-	// 	InternalServerError(w, err)
-	// 	return
-	// }
+	vehicleID := entities.VehicleID(id)
+	usecase := usecases.NewGetKms(h.kmAdapter, h.vehicleAdapter)
+	list, err := usecase.Execute(c, vehicleID)
+	if err != nil {
+		InternalServerError(w, err)
+		return
+	}
 
-	// JSON(w, http.StatusOK, list)
-	Unimplemented(w)
+	JSON(w, http.StatusOK, list)
 }
 
 func (h kmHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -66,16 +65,39 @@ func (h kmHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	vehicleID := entities.VehicleID(id)
 	usecase := usecases.NewRegisterKm(h.kmAdapter, h.vehicleAdapter)
-	err = usecase.Execute(c, vehicleID, km)
+	result, err := usecase.Execute(c, vehicleID, km)
 	if err != nil {
 		InternalServerError(w, err)
 		return
 	}
 
+	JSON(w, http.StatusCreated, result)
 }
 
 func (h kmHandler) Get(w http.ResponseWriter, r *http.Request) {
-	Unimplemented(w)
+	c := r.Context()
+	id, err := GetID(r)
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	kmid, err := GetParam(r, "km_id")
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	vehicleID := entities.VehicleID(id)
+	kmID := entities.KmID(kmid)
+	usecase := usecases.NewGetKm(h.kmAdapter, h.vehicleAdapter)
+	km, err := usecase.Execute(c, vehicleID, kmID)
+	if err != nil {
+		InternalServerError(w, err)
+		return
+	}
+
+	JSON(w, http.StatusOK, km)
 }
 
 func (h kmHandler) Update(w http.ResponseWriter, r *http.Request) {

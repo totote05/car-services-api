@@ -12,39 +12,39 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetKms(t *testing.T) {
+func TestGetKm(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
+	km := dsl.NewValidKmOne()
 	suite := []struct {
 		name         string
-		list         []entities.Km
 		vehicle      *entities.Vehicle
-		err          error
+		km           *entities.Km
 		vehicleError error
 		kmError      error
+		err          error
 	}{
 		{
-			name: "get all kms successfully",
-			list: []entities.Km{
-				dsl.NewValidKmOne(),
-			},
+			name:         "get km successfully",
 			vehicle:      &vehicle,
-			err:          nil,
+			km:           &km,
 			vehicleError: nil,
 			kmError:      nil,
+			err:          nil,
 		},
 		{
 			name:         "should fail when vehicle service fails",
-			list:         nil,
+			vehicle:      nil,
+			km:           nil,
 			vehicleError: adapters.ErrNotFound,
 			kmError:      nil,
 			err:          adapters.ErrNotFound,
 		},
 		{
 			name:         "should fail when km service fails",
-			list:         nil,
 			vehicle:      &vehicle,
+			km:           nil,
 			vehicleError: nil,
 			kmError:      adapters.ErrNotFound,
 			err:          adapters.ErrNotFound,
@@ -59,13 +59,14 @@ func TestGetKms(t *testing.T) {
 
 			kmAdapter := mocks.NewKm(t)
 			if test.vehicleError == nil {
-				kmAdapter.On("GetAll", ctx, vehicle.ID).Return(test.list, test.kmError)
+				kmAdapter.On("Get", ctx, vehicle.ID, km.ID).Return(test.km, test.kmError)
 			}
 
-			usecase := usecases.NewGetKms(kmAdapter, vehicleAdapter)
-			list, err := usecase.Execute(ctx, vehicle.ID)
-			assert.Equal(test.list, list)
+			usecase := usecases.NewGetKm(kmAdapter, vehicleAdapter)
+			result, err := usecase.Execute(ctx, vehicle.ID, km.ID)
+
 			assert.Equal(test.err, err)
+			assert.Equal(test.km, result)
 		})
 	}
 }

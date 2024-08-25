@@ -6,6 +6,7 @@ import (
 
 	"car-services-api.totote05.ar/domain/adapters"
 	"car-services-api.totote05.ar/domain/entities"
+	"github.com/aidarkhanov/nanoid"
 )
 
 var (
@@ -24,25 +25,32 @@ func NewRegisterKm(kmAdapter adapters.Km, vehicleAdapter adapters.Vehicle) Regis
 	}
 }
 
-func (r RegisterKm) Execute(ctx context.Context, vehicleID entities.VehicleID, km entities.Km) error {
+func (r RegisterKm) Execute(ctx context.Context, vehicleID entities.VehicleID, km entities.Km) (*entities.Km, error) {
 	vehicle, err := r.vehicleAdapter.Get(ctx, vehicleID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	kms, err := r.kmAdapter.GetAll(ctx, vehicle.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(kms) > 0 {
 		for _, k := range kms {
-			if (km.Date.After(k.Date) && km.Value < k.Value) ||
+			if k.Date.Equal(km.Date) || k.Value == km.Value ||
+				(km.Date.After(k.Date) && km.Value < k.Value) ||
 				(km.Date.Before(k.Date) && km.Value > k.Value) {
-				return ErrInvalidKmData
+				return nil, ErrInvalidKmData
 			}
 		}
 	}
 
-	return r.kmAdapter.Save(ctx, vehicle.ID, km)
+	km.ID = entities.KmID(nanoid.New())
+	err = r.kmAdapter.Save(ctx, vehicle.ID, km)
+	if err != nil {
+		return nil, err
+	}
+
+	return &km, nil
 }
