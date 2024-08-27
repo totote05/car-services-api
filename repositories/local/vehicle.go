@@ -14,8 +14,15 @@ type (
 )
 
 func NewVehicle() adapters.Vehicle {
+	ld := getLocalData()
+	storage := map[entities.VehicleID]entities.Vehicle{}
+
+	for _, vehicle := range ld.Vehicle {
+		storage[vehicle.ID] = vehicle.Vehicle
+	}
+
 	return &vehicle{
-		storage: map[entities.VehicleID]entities.Vehicle{},
+		storage: storage,
 	}
 }
 

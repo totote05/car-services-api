@@ -14,8 +14,15 @@ type (
 )
 
 func NewService() adapters.Service {
+	ld := getLocalData()
+	storage := map[entities.ServiceID]entities.Service{}
+
+	for _, service := range ld.Services {
+		storage[service.ID] = service
+	}
+
 	return &service{
-		storage: map[entities.ServiceID]entities.Service{},
+		storage: storage,
 	}
 }
 

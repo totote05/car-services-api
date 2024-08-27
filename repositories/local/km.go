@@ -12,8 +12,15 @@ type km struct {
 }
 
 func NewKm() adapters.Km {
+	ld := getLocalData()
+	storage := map[entities.VehicleID][]entities.Km{}
+
+	for _, vehicle := range ld.Vehicle {
+		storage[vehicle.ID] = vehicle.RegisteredKm
+	}
+
 	return &km{
-		storage: map[entities.VehicleID][]entities.Km{},
+		storage: storage,
 	}
 }
 
