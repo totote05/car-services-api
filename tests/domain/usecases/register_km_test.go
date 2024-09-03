@@ -27,6 +27,7 @@ func TestRegisterKm(t *testing.T) {
 		km           entities.Km
 		expected     *entities.Km
 		list         []entities.Km
+		shouldGet    bool
 		shouldSave   bool
 		err          error
 		serviceError error
@@ -38,7 +39,7 @@ func TestRegisterKm(t *testing.T) {
 			vehicle:      &vehicle,
 			km:           km,
 			list:         []entities.Km{},
-			shouldSave:   false,
+			shouldGet:    true,
 			err:          adapters.ErrNotFound,
 			serviceError: adapters.ErrNotFound,
 		},
@@ -48,6 +49,7 @@ func TestRegisterKm(t *testing.T) {
 			km:         km,
 			expected:   &km,
 			list:       []entities.Km{},
+			shouldGet:  true,
 			shouldSave: true,
 		},
 		{
@@ -56,6 +58,7 @@ func TestRegisterKm(t *testing.T) {
 			km:         km2,
 			expected:   &km2,
 			list:       []entities.Km{km},
+			shouldGet:  true,
 			shouldSave: true,
 		},
 		{
@@ -66,13 +69,13 @@ func TestRegisterKm(t *testing.T) {
 				km,
 				km2,
 			},
-			shouldSave: false,
-			err:        usecases.ErrInvalidKmData,
+			shouldGet: true,
+			err:       usecases.ErrInvalidKmData,
 		},
 		{
 			name:         "register should fail when vehicle service fails",
 			km:           km,
-			shouldSave:   false,
+			shouldGet:    true,
 			err:          adapters.ErrNotFound,
 			vehicleError: adapters.ErrNotFound,
 		},
@@ -84,8 +87,8 @@ func TestRegisterKm(t *testing.T) {
 				km,
 				km2,
 			},
-			shouldSave: false,
-			err:        usecases.ErrInvalidKmData,
+			shouldGet: true,
+			err:       usecases.ErrInvalidKmData,
 		},
 		{
 			name:    "register same km value should fail",
@@ -94,8 +97,8 @@ func TestRegisterKm(t *testing.T) {
 			list: []entities.Km{
 				km,
 			},
-			shouldSave: false,
-			err:        usecases.ErrInvalidKmData,
+			shouldGet: true,
+			err:       usecases.ErrInvalidKmData,
 		},
 		{
 			name:    "register same date value should fail",
@@ -104,17 +107,25 @@ func TestRegisterKm(t *testing.T) {
 			list: []entities.Km{
 				km,
 			},
-			shouldSave: false,
-			err:        usecases.ErrInvalidKmData,
+			shouldGet: true,
+			err:       usecases.ErrInvalidKmData,
 		},
 		{
 			name:       "register should fail when save fails",
 			vehicle:    &vehicle,
 			km:         km,
 			list:       []entities.Km{},
+			shouldGet:  true,
 			shouldSave: true,
 			err:        anError,
 			saveError:  anError,
+		},
+		{
+			name:    "register should fail when km is invalid",
+			vehicle: &vehicle,
+			km:      dsl.NewInvalidKmFive(),
+			list:    nil,
+			err:     entities.ErrKmHasZeroValue,
 		},
 	}
 
@@ -122,14 +133,16 @@ func TestRegisterKm(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			vehicleAdapter := mocks.NewVehicle(t)
-			vehicleAdapter.On("Get", ctx, vehicle.ID).Return(test.vehicle, test.vehicleError)
+			if test.shouldGet {
+				vehicleAdapter.On("Get", ctx, vehicle.ID).Return(test.vehicle, test.vehicleError)
+			}
 
 			kmAdapter := mocks.NewKm(t)
 			if test.shouldSave {
 				kmAdapter.On("Save", ctx, vehicle.ID, mock.Anything).Return(test.err)
 			}
 
-			if test.vehicleError == nil {
+			if test.vehicleError == nil && test.shouldGet {
 				kmAdapter.On("GetAll", ctx, vehicle.ID).Return(test.list, test.serviceError)
 			}
 

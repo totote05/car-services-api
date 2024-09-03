@@ -7,4 +7,5 @@ var (
 	ErrDuplicatedVehicle  = errors.New("duplicated vehicle")
 	ErrInvalidServiceData = errors.New("invalid service data")
 	ErrDuplicatedService  = errors.New("duplicated service")
+	ErrKmNotFound         = errors.New("km not found")
 )

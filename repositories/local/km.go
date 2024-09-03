@@ -37,6 +37,13 @@ func (k *km) Save(ctx context.Context, vehicleID entities.VehicleID, km entities
 		k.storage[vehicleID] = []entities.Km{}
 	}
 
+	for i, value := range k.storage[vehicleID] {
+		if value.ID == km.ID {
+			k.storage[vehicleID][i] = km
+			return nil
+		}
+	}
+
 	k.storage[vehicleID] = append(k.storage[vehicleID], km)
 
 	return nil
@@ -54,19 +61,4 @@ func (k *km) Get(ctx context.Context, vehicleID entities.VehicleID, kmID entitie
 	}
 
 	return nil, adapters.ErrNotFound
-}
-
-func (k *km) Update(ctx context.Context, vehicleID entities.VehicleID, km entities.Km) error {
-	if _, ok := k.storage[vehicleID]; !ok {
-		return adapters.ErrNotFound
-	}
-
-	for i, value := range k.storage[vehicleID] {
-		if value.ID == km.ID {
-			k.storage[vehicleID][i] = km
-			return nil
-		}
-	}
-
-	return adapters.ErrNotFound
 }

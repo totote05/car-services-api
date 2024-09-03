@@ -1,6 +1,13 @@
 package entities
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ErrKmHasZeroValue = errors.New("km has zero value")
+)
 
 type (
 	Km struct {
@@ -11,3 +18,11 @@ type (
 
 	KmID string
 )
+
+func (k *Km) Validate() error {
+	if k != nil && k.Value == 0 {
+		return ErrKmHasZeroValue
+	}
+
+	return nil
+}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"car-services-api.totote05.ar/domain/adapters"
@@ -101,7 +102,40 @@ func (h kmHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h kmHandler) Update(w http.ResponseWriter, r *http.Request) {
-	Unimplemented(w)
+	c := r.Context()
+	id, err := GetID(r)
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	kmid, err := GetParam(r, "km_id")
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	km, err := GetBody[entities.Km](r)
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	vehicleID := entities.VehicleID(id)
+	kmID := entities.KmID(kmid)
+
+	if km.ID != kmID {
+		BadRequest(w, errors.New("km id does not match"))
+		return
+	}
+	usecase := usecases.NewUpdateKm(h.kmAdapter, h.vehicleAdapter)
+	result, err := usecase.Execute(c, vehicleID, kmID, km)
+	if err != nil {
+		InternalServerError(w, err)
+		return
+	}
+
+	JSON(w, http.StatusOK, result)
 }
 
 func (h kmHandler) Delete(w http.ResponseWriter, r *http.Request) {

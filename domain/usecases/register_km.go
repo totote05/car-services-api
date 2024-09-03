@@ -26,6 +26,10 @@ func NewRegisterKm(kmAdapter adapters.Km, vehicleAdapter adapters.Vehicle) Regis
 }
 
 func (r RegisterKm) Execute(ctx context.Context, vehicleID entities.VehicleID, km entities.Km) (*entities.Km, error) {
+	if err := km.Validate(); err != nil {
+		return nil, err
+	}
+
 	vehicle, err := r.vehicleAdapter.Get(ctx, vehicleID)
 	if err != nil {
 		return nil, err

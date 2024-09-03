@@ -8,6 +8,14 @@ import (
 
 var initialDate = time.Now()
 
+func UpdateWith(km entities.Km, value uint64, time time.Duration) entities.Km {
+	return entities.Km{
+		ID:    km.ID,
+		Value: value,
+		Date:  km.Date.Add(time),
+	}
+}
+
 func NewValidKmOne() entities.Km {
 	return entities.Km{
 		ID:    entities.KmID("1"),
@@ -53,5 +61,11 @@ func NewInvalidKmFour() entities.Km {
 		ID:    entities.KmID("6"),
 		Value: 1060,
 		Date:  initialDate,
+	}
+}
+
+func NewInvalidKmFive() entities.Km {
+	return entities.Km{
+		Date: initialDate.Add(time.Hour),
 	}
 }
