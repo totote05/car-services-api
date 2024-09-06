@@ -42,7 +42,7 @@ func TestDeleteVehicleFailDeleting(t *testing.T) {
 	vehicle := dsl.NewValidVehicleOne()
 
 	vehicleAdapter := mocks.NewVehicle(t)
-	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(vehicle, nil)
+	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(&vehicle, nil)
 	vehicleAdapter.On("Delete", ctx, vehicle.ID).Return(adapters.ErrPersisting)
 
 	usecase := usecases.NewDeleteVehicle(vehicleAdapter)
@@ -56,7 +56,7 @@ func TestDeleteVehicleSuccess(t *testing.T) {
 	vehicle := dsl.NewValidVehicleOne()
 
 	vehicleAdapter := mocks.NewVehicle(t)
-	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(vehicle, nil)
+	vehicleAdapter.On("Get", ctx, vehicle.ID).Return(&vehicle, nil)
 	vehicleAdapter.On("Delete", ctx, vehicle.ID).Return(nil)
 
 	usecase := usecases.NewDeleteVehicle(vehicleAdapter)

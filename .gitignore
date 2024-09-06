@@ -2,3 +2,4 @@
 .idea
 __debug_bin*
 /coverage
+/data

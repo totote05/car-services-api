@@ -7,70 +7,70 @@ import (
 	"car-services-api.totote05.ar/domain/adapters"
 	"car-services-api.totote05.ar/domain/entities"
 	"car-services-api.totote05.ar/domain/usecases"
-	"github.com/gin-gonic/gin"
-)
-
-var (
-	ErrMissinServiceID = errors.New("error missing service id")
 )
 
 type (
+	ServiceHandler interface {
+		List(w http.ResponseWriter, r *http.Request)
+		Create(w http.ResponseWriter, r *http.Request)
+		Get(w http.ResponseWriter, r *http.Request)
+		Update(w http.ResponseWriter, r *http.Request)
+		Delete(w http.ResponseWriter, r *http.Request)
+	}
+
 	serviceHandler struct {
 		serviceAdapter adapters.Service
 	}
 )
 
-func AddServiceHandler(router *gin.Engine, serviceAdapter adapters.Service) {
-	handlers := serviceHandler{
+func NewServiceHandler(serviceAdapter adapters.Service) ServiceHandler {
+	return &serviceHandler{
 		serviceAdapter: serviceAdapter,
 	}
-	group := router.Group("/service")
-	group.GET("/", handlers.List)
-	group.POST("/", handlers.Create)
-	group.GET("/:id", handlers.Get)
-	group.PUT("/:id", handlers.Update)
-	group.DELETE("/:id", handlers.Delete)
 }
 
-func (h *serviceHandler) List(c *gin.Context) {
+func (h *serviceHandler) List(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
 	usecase := usecases.NewGetServices(h.serviceAdapter)
 
 	list, err := usecase.Execute(c)
 	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, list)
+	JSON(w, http.StatusOK, list)
 }
 
-func (h *serviceHandler) Create(c *gin.Context) {
-	service := &entities.Service{}
-	if err := c.Bind(service); err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+func (h *serviceHandler) Create(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	service, err := GetBody[entities.Service](r)
+	if err != nil {
+		BadRequest(w, err)
 		return
 	}
 
 	if err := service.Validate(); err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+		BadRequest(w, err)
 		return
 	}
 
 	usecase := usecases.NewCreateService(h.serviceAdapter)
 
-	result, err := usecase.Execute(c, *service)
+	result, err := usecase.Execute(c, service)
 	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	JSON(w, http.StatusCreated, result)
 }
 
-func (h *serviceHandler) Get(c *gin.Context) {
-	id, err := h.getServiceParam(c)
+func (h *serviceHandler) Get(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	id, err := GetID(r)
 	if err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+		BadRequest(w, err)
 	}
 
 	serviceID := entities.ServiceID(id)
@@ -78,68 +78,56 @@ func (h *serviceHandler) Get(c *gin.Context) {
 	usecase := usecases.NewGetService(h.serviceAdapter)
 	result, err := usecase.Execute(c, serviceID)
 	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 	}
 
-	c.JSON(http.StatusOK, result)
+	JSON(w, http.StatusOK, result)
 }
 
-func (h *serviceHandler) Update(c *gin.Context) {
-	service := &entities.Service{}
-	if err := c.Bind(service); err != nil {
-		HandleError(c, http.StatusBadRequest, err)
-		return
-	}
-
-	serviceID, err := h.getServiceParam(c)
+func (h *serviceHandler) Update(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	id, err := GetID(r)
 	if err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+		BadRequest(w, err)
 		return
 	}
 
-	if serviceID != service.ID {
-		HandleError(c, http.StatusBadRequest, errors.New("service id does not match"))
+	service, err := GetBody[entities.Service](r)
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	if entities.ServiceID(id) != service.ID {
+		BadRequest(w, errors.New("service id does not match"))
 		return
 	}
 
 	usecase := usecases.NewUpdateService(h.serviceAdapter)
-	result, err := usecase.Execute(c, *service)
+	result, err := usecase.Execute(c, service)
 	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	JSON(w, http.StatusOK, result)
 }
 
-func (h *serviceHandler) Delete(c *gin.Context) {
-	serviceID, err := h.getServiceParam(c)
+func (h *serviceHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	c := r.Context()
+	id, err := GetID(r)
 	if err != nil {
-		HandleError(c, http.StatusBadRequest, err)
+		BadRequest(w, err)
 		return
 	}
 
+	serviceID := entities.ServiceID(id)
 	usecase := usecases.NewDeleteService(h.serviceAdapter)
 	err = usecase.Execute(c, serviceID)
 	if err != nil {
-		HandleError(c, http.StatusInternalServerError, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	c.Status(http.StatusOK)
-}
-
-func (h *serviceHandler) getServiceParam(c *gin.Context) (entities.ServiceID, error) {
-	var (
-		serviceID entities.ServiceID
-		err       error
-	)
-
-	id, ok := c.Params.Get("id")
-	serviceID = entities.ServiceID(id)
-	if !ok {
-		err = ErrMissinServiceID
-	}
-
-	return serviceID, err
+	w.WriteHeader(http.StatusOK)
 }

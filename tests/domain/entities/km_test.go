@@ -8,18 +8,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateVehicle(t *testing.T) {
-	invalidVehicle := dsl.NewInvalidVehicle()
-	validVehicle := dsl.NewValidVehicleOne()
+func TestValidateKm(t *testing.T) {
+	invalidKm := dsl.NewInvalidKmFive()
+	validKm := dsl.NewValidKmOne()
 	assert := assert.New(t)
 	suite := []struct {
 		name     string
-		input    *entities.Vehicle
+		input    *entities.Km
 		expected error
 	}{
-		{"nil vehicle should not have error", nil, nil},
-		{"empty plate fail with message 'empty plate'", &invalidVehicle, entities.ErrVehicleHasEmptyPlate},
-		{"valid vehicle should have not error", &validVehicle, nil},
+		{"nil km should not have error", nil, nil},
+		{"zero value km fail with message 'km has zero value'", &invalidKm, entities.ErrKmHasZeroValue},
+		{"valid km should have not error", &validKm, nil},
 	}
 
 	for _, test := range suite {

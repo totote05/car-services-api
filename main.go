@@ -1,19 +1,26 @@
 package main
 
 import (
+	"log"
+
 	"car-services-api.totote05.ar/api/handlers"
 	"car-services-api.totote05.ar/repositories/local"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	router := gin.Default()
 
 	vehicleAdapter := local.NewVehicle()
-	handlers.AddVehicleHandler(router, vehicleAdapter)
-
 	serviceAdapter := local.NewService()
-	handlers.AddServiceHandler(router, serviceAdapter)
+	kmAdapter := local.NewKm()
 
-	router.Run()
+	server := handlers.NewServer(
+		vehicleAdapter,
+		serviceAdapter,
+		kmAdapter,
+	)
+
+	log.Println("Server running on port 8080")
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatalf("could not listen on port 8080 %v", err)
+	}
 }

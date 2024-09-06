@@ -30,6 +30,7 @@ func TestGetService(t *testing.T) {
 	for _, test := range suite {
 		test := test
 		t.Run(test.description, func(t *testing.T) {
+			t.Parallel()
 			serviceAdapter := mocks.NewService(t)
 			serviceAdapter.On("Get", ctx, test.input).Return(test.expected, test.err)
 

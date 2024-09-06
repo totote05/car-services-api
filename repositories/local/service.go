@@ -8,18 +8,25 @@ import (
 )
 
 type (
-	Service struct {
+	service struct {
 		storage map[entities.ServiceID]entities.Service
 	}
 )
 
 func NewService() adapters.Service {
-	return &Service{
-		storage: map[entities.ServiceID]entities.Service{},
+	ld := getLocalData()
+	storage := map[entities.ServiceID]entities.Service{}
+
+	for _, service := range ld.Services {
+		storage[service.ID] = service
+	}
+
+	return &service{
+		storage: storage,
 	}
 }
 
-func (r *Service) FindByName(ctx context.Context, Name string) ([]entities.Service, error) {
+func (r *service) FindByName(ctx context.Context, Name string) ([]entities.Service, error) {
 	for _, item := range r.storage {
 		if item.Name == Name {
 			return []entities.Service{item}, nil
@@ -29,7 +36,7 @@ func (r *Service) FindByName(ctx context.Context, Name string) ([]entities.Servi
 	return nil, adapters.ErrNotFound
 }
 
-func (r *Service) Get(ctx context.Context, ID entities.ServiceID) (*entities.Service, error) {
+func (r *service) Get(ctx context.Context, ID entities.ServiceID) (*entities.Service, error) {
 	if service, ok := r.storage[ID]; ok {
 		return &service, nil
 	}
@@ -37,7 +44,7 @@ func (r *Service) Get(ctx context.Context, ID entities.ServiceID) (*entities.Ser
 	return nil, adapters.ErrNotFound
 }
 
-func (r *Service) GetAll(ctx context.Context) ([]entities.Service, error) {
+func (r *service) GetAll(ctx context.Context) ([]entities.Service, error) {
 	list := []entities.Service{}
 	for _, item := range r.storage {
 		list = append(list, item)
@@ -46,12 +53,12 @@ func (r *Service) GetAll(ctx context.Context) ([]entities.Service, error) {
 	return list, nil
 }
 
-func (r *Service) Save(ctx context.Context, service entities.Service) error {
+func (r *service) Save(ctx context.Context, service entities.Service) error {
 	r.storage[service.ID] = service
 	return nil
 }
 
-func (r *Service) Delete(ctx context.Context, ID entities.ServiceID) error {
+func (r *service) Delete(ctx context.Context, ID entities.ServiceID) error {
 	delete(r.storage, ID)
 	return nil
 }
