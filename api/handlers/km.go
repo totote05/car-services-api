@@ -139,5 +139,27 @@ func (h kmHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h kmHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	Unimplemented(w)
+	c := r.Context()
+	id, err := GetID(r)
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	kmid, err := GetParam(r, "km_id")
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	vehicleID := entities.VehicleID(id)
+	kmID := entities.KmID(kmid)
+	usecase := usecases.NewDeleteKm(h.kmAdapter, h.vehicleAdapter)
+	err = usecase.Execute(c, vehicleID, kmID)
+	if err != nil {
+		InternalServerError(w, err)
+		return
+	}
+
+	JSON(w, http.StatusNoContent, nil)
 }

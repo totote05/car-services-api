@@ -14,6 +14,24 @@ type Km struct {
 	mock.Mock
 }
 
+// Delete provides a mock function with given fields: ctx, vehicleID, kmID
+func (_m *Km) Delete(ctx context.Context, vehicleID entities.VehicleID, kmID entities.KmID) error {
+	ret := _m.Called(ctx, vehicleID, kmID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, entities.VehicleID, entities.KmID) error); ok {
+		r0 = rf(ctx, vehicleID, kmID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Get provides a mock function with given fields: ctx, vehicleID, kmID
 func (_m *Km) Get(ctx context.Context, vehicleID entities.VehicleID, kmID entities.KmID) (*entities.Km, error) {
 	ret := _m.Called(ctx, vehicleID, kmID)
@@ -80,24 +98,6 @@ func (_m *Km) Save(ctx context.Context, vehicleID entities.VehicleID, km entitie
 
 	if len(ret) == 0 {
 		panic("no return value specified for Save")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, entities.VehicleID, entities.Km) error); ok {
-		r0 = rf(ctx, vehicleID, km)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// Update provides a mock function with given fields: ctx, vehicleID, km
-func (_m *Km) Update(ctx context.Context, vehicleID entities.VehicleID, km entities.Km) error {
-	ret := _m.Called(ctx, vehicleID, km)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Update")
 	}
 
 	var r0 error

@@ -62,3 +62,16 @@ func (k *km) Get(ctx context.Context, vehicleID entities.VehicleID, kmID entitie
 
 	return nil, adapters.ErrNotFound
 }
+
+func (k *km) Delete(ctx context.Context, vehicleID entities.VehicleID, kmID entities.KmID) error {
+	if list, ok := k.storage[vehicleID]; ok {
+		for i, km := range list {
+			if km.ID == kmID {
+				k.storage[vehicleID] = append(list[:i], list[i+1:]...)
+				return nil
+			}
+		}
+	}
+
+	return adapters.ErrNotFound
+}

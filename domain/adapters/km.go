@@ -10,4 +10,5 @@ type Km interface {
 	Save(ctx context.Context, vehicleID entities.VehicleID, km entities.Km) error
 	GetAll(ctx context.Context, vehicleID entities.VehicleID) ([]entities.Km, error)
 	Get(ctx context.Context, vehicleID entities.VehicleID, kmID entities.KmID) (*entities.Km, error)
+	Delete(ctx context.Context, vehicleID entities.VehicleID, kmID entities.KmID) error
 }
