@@ -18,7 +18,7 @@ func TestGetKms(t *testing.T) {
 	vehicle := dsl.NewValidVehicleOne()
 	suite := []struct {
 		name         string
-		list         []entities.Km
+		list         entities.KmList
 		vehicle      *entities.Vehicle
 		err          error
 		vehicleError error
@@ -26,7 +26,7 @@ func TestGetKms(t *testing.T) {
 	}{
 		{
 			name: "get all kms successfully",
-			list: []entities.Km{
+			list: entities.KmList{
 				dsl.NewValidKmOne(),
 			},
 			vehicle:      &vehicle,

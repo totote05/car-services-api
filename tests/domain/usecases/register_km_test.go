@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"car-services-api.totote05.ar/domain/adapters"
 	"car-services-api.totote05.ar/domain/entities"
@@ -19,14 +20,14 @@ func TestRegisterKm(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 	vehicle := dsl.NewValidVehicleOne()
-	km := dsl.NewValidKmOne()
-	km2 := dsl.NewValidKmTwo()
+	km := dsl.NewValidKm()
+	km2 := dsl.UpdateWith(km, 1050, time.Hour)
 	suite := []struct {
 		name         string
 		vehicle      *entities.Vehicle
 		km           entities.Km
 		expected     *entities.Km
-		list         []entities.Km
+		list         entities.KmList
 		shouldGet    bool
 		shouldSave   bool
 		err          error
@@ -38,7 +39,7 @@ func TestRegisterKm(t *testing.T) {
 			name:         "register service should fail when km service fails",
 			vehicle:      &vehicle,
 			km:           km,
-			list:         []entities.Km{},
+			list:         entities.KmList{},
 			shouldGet:    true,
 			err:          adapters.ErrNotFound,
 			serviceError: adapters.ErrNotFound,
@@ -48,7 +49,7 @@ func TestRegisterKm(t *testing.T) {
 			vehicle:    &vehicle,
 			km:         km,
 			expected:   &km,
-			list:       []entities.Km{},
+			list:       entities.KmList{},
 			shouldGet:  true,
 			shouldSave: true,
 		},
@@ -57,7 +58,7 @@ func TestRegisterKm(t *testing.T) {
 			vehicle:    &vehicle,
 			km:         km2,
 			expected:   &km2,
-			list:       []entities.Km{km},
+			list:       entities.KmList{km},
 			shouldGet:  true,
 			shouldSave: true,
 		},
@@ -65,7 +66,7 @@ func TestRegisterKm(t *testing.T) {
 			name:    "register older km with newer value should fail",
 			vehicle: &vehicle,
 			km:      dsl.NewInvalidKm(),
-			list: []entities.Km{
+			list: entities.KmList{
 				km,
 				km2,
 			},
@@ -83,7 +84,7 @@ func TestRegisterKm(t *testing.T) {
 			name:    "register should fail when km service fails",
 			vehicle: &vehicle,
 			km:      dsl.NewInvalidKmTwo(),
-			list: []entities.Km{
+			list: entities.KmList{
 				km,
 				km2,
 			},
@@ -94,7 +95,7 @@ func TestRegisterKm(t *testing.T) {
 			name:    "register same km value should fail",
 			vehicle: &vehicle,
 			km:      dsl.NewInvalidKmThree(),
-			list: []entities.Km{
+			list: entities.KmList{
 				km,
 			},
 			shouldGet: true,
@@ -104,7 +105,7 @@ func TestRegisterKm(t *testing.T) {
 			name:    "register same date value should fail",
 			vehicle: &vehicle,
 			km:      dsl.NewInvalidKmFour(),
-			list: []entities.Km{
+			list: entities.KmList{
 				km,
 			},
 			shouldGet: true,
@@ -114,7 +115,7 @@ func TestRegisterKm(t *testing.T) {
 			name:       "register should fail when save fails",
 			vehicle:    &vehicle,
 			km:         km,
-			list:       []entities.Km{},
+			list:       entities.KmList{},
 			shouldGet:  true,
 			shouldSave: true,
 			err:        anError,

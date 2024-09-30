@@ -16,6 +16,13 @@ func UpdateWith(km entities.Km, value uint64, time time.Duration) entities.Km {
 	}
 }
 
+func NewValidKm() entities.Km {
+	return entities.Km{
+		Value: 1000,
+		Date:  initialDate,
+	}
+}
+
 func NewValidKmOne() entities.Km {
 	return entities.Km{
 		ID:    entities.KmID("1"),

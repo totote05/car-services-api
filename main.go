@@ -12,11 +12,13 @@ func main() {
 	vehicleAdapter := local.NewVehicle()
 	serviceAdapter := local.NewService()
 	kmAdapter := local.NewKm()
+	serviceRegister := local.NewServiceRegister()
 
 	server := handlers.NewServer(
 		vehicleAdapter,
 		serviceAdapter,
 		kmAdapter,
+		serviceRegister,
 	)
 
 	log.Println("Server running on port 8080")

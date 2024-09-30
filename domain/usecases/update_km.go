@@ -39,23 +39,11 @@ func (u UpdateKm) Execute(
 		return nil, err
 	}
 
-	var found bool
-	for _, k := range list {
-		isDifferentKm := k.ID != kmID
-		isSameDate := k.Date.Equal(km.Date)
-		isSameValue := k.Value == km.Value
-		isAfter := km.Date.After(k.Date) && km.Value < k.Value
-		isBefore := km.Date.Before(k.Date) && km.Value > k.Value
-
-		if isDifferentKm && (isSameDate || isSameValue || isAfter || isBefore) {
-			return nil, ErrInvalidKmData
-		}
-		if k.ID == kmID {
-			found = true
-		}
+	validation := list.ValidateConsistency(km)
+	if validation == entities.KmValidationInvalid {
+		return nil, ErrInvalidKmData
 	}
-
-	if !found {
+	if validation == entities.KmValidationNotFound {
 		return nil, ErrKmNotFound
 	}
 

@@ -63,23 +63,23 @@ func (_m *Km) Get(ctx context.Context, vehicleID entities.VehicleID, kmID entiti
 }
 
 // GetAll provides a mock function with given fields: ctx, vehicleID
-func (_m *Km) GetAll(ctx context.Context, vehicleID entities.VehicleID) ([]entities.Km, error) {
+func (_m *Km) GetAll(ctx context.Context, vehicleID entities.VehicleID) (entities.KmList, error) {
 	ret := _m.Called(ctx, vehicleID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAll")
 	}
 
-	var r0 []entities.Km
+	var r0 entities.KmList
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, entities.VehicleID) ([]entities.Km, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.VehicleID) (entities.KmList, error)); ok {
 		return rf(ctx, vehicleID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, entities.VehicleID) []entities.Km); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.VehicleID) entities.KmList); ok {
 		r0 = rf(ctx, vehicleID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]entities.Km)
+			r0 = ret.Get(0).(entities.KmList)
 		}
 	}
 

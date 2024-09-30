@@ -25,7 +25,7 @@ func TestUpdateKm(t *testing.T) {
 		name         string
 		vehicle      *entities.Vehicle
 		km           entities.Km
-		list         []entities.Km
+		list         entities.KmList
 		expected     *entities.Km
 		shouldGet    bool
 		shouldSave   bool
@@ -59,7 +59,7 @@ func TestUpdateKm(t *testing.T) {
 			vehicle:   &vehicle,
 			km:        km,
 			shouldGet: true,
-			list: []entities.Km{
+			list: entities.KmList{
 				dsl.NewValidKmOne(),
 			},
 			shouldSave: true,
@@ -71,7 +71,7 @@ func TestUpdateKm(t *testing.T) {
 			vehicle:   &vehicle,
 			km:        km,
 			shouldGet: true,
-			list: []entities.Km{
+			list: entities.KmList{
 				dsl.NewValidKmTwo(),
 			},
 			err: usecases.ErrKmNotFound,
@@ -80,7 +80,7 @@ func TestUpdateKm(t *testing.T) {
 			name:    "update with invalid older km should fail",
 			vehicle: &vehicle,
 			km:      dsl.UpdateWith(km, 1050, -1*time.Hour),
-			list: []entities.Km{
+			list: entities.KmList{
 				km,
 				km2,
 			},
@@ -91,7 +91,7 @@ func TestUpdateKm(t *testing.T) {
 			name:    "update with invalid newer km should fail",
 			vehicle: &vehicle,
 			km:      dsl.UpdateWith(km2, 1000, time.Hour),
-			list: []entities.Km{
+			list: entities.KmList{
 				km,
 				km2,
 			},
@@ -102,7 +102,7 @@ func TestUpdateKm(t *testing.T) {
 			name:    "update with same date and different value success",
 			vehicle: &vehicle,
 			km:      dsl.UpdateWith(km, 1010, 0),
-			list: []entities.Km{
+			list: entities.KmList{
 				km,
 				km2,
 			},
@@ -118,7 +118,7 @@ func TestUpdateKm(t *testing.T) {
 			name:    "update with same value and different date success",
 			vehicle: &vehicle,
 			km:      dsl.UpdateWith(km, 1000, 30*time.Minute),
-			list: []entities.Km{
+			list: entities.KmList{
 				km,
 				km2,
 			},
