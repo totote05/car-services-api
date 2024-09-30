@@ -24,6 +24,14 @@ func NewServiceRegister() adapters.ServiceRegister {
 	}
 }
 
+func (r ServiceRegister) GetAll(ctx context.Context, vehicleID entities.VehicleID) ([]entities.ServiceRegister, error) {
+	if _, ok := r.storage[vehicleID]; !ok {
+		return []entities.ServiceRegister{}, nil
+	}
+
+	return r.storage[vehicleID], nil
+}
+
 func (r ServiceRegister) Save(ctx context.Context, serviceRegister entities.ServiceRegister) error {
 	if _, ok := r.storage[serviceRegister.VehicleID]; !ok {
 		r.storage[serviceRegister.VehicleID] = []entities.ServiceRegister{}

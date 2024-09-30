@@ -8,4 +8,5 @@ import (
 
 type ServiceRegister interface {
 	Save(ctx context.Context, serviceRegister entities.ServiceRegister) error
+	GetAll(ctx context.Context, vehicleID entities.VehicleID) ([]entities.ServiceRegister, error)
 }

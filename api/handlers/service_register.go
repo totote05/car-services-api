@@ -37,7 +37,27 @@ func NewServiceRegisterHandler(
 }
 
 func (sr *serviceRegisterHandler) List(w http.ResponseWriter, r *http.Request) {
-	Unimplemented(w)
+	c := r.Context()
+	id, err := GetID(r)
+	if err != nil {
+		BadRequest(w, err)
+		return
+	}
+
+	vehicleID := entities.VehicleID(id)
+
+	usecase := usecases.NewGetRegisteredServices(
+		sr.serviceRegisterAdapter,
+		sr.vehicleAdapter,
+	)
+
+	result, err := usecase.Execute(c, vehicleID)
+	if err != nil {
+		InternalServerError(w, err)
+		return
+	}
+
+	JSON(w, http.StatusOK, result)
 }
 
 func (sr *serviceRegisterHandler) Create(w http.ResponseWriter, r *http.Request) {
