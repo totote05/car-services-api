@@ -44,7 +44,7 @@ func TestGetRegisteredServices(t *testing.T) {
 
 	for _, test := range suite {
 		t.Run(test.name, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 			vehicleAdapter := mocks.NewVehicle(t)
 			vehicleAdapter.On("Get", ctx, vehicle.ID).Return(test.vehicle, test.vehicleErr)
 

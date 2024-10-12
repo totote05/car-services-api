@@ -48,3 +48,17 @@ func (r ServiceRegister) Save(ctx context.Context, serviceRegister entities.Serv
 
 	return nil
 }
+
+func (r ServiceRegister) Get(ctx context.Context, vehicleID entities.VehicleID, serviceRegisterID entities.ServiceRegisterID) (*entities.ServiceRegister, error) {
+	if _, ok := r.storage[vehicleID]; !ok {
+		return nil, adapters.ErrNotFound
+	}
+
+	for _, serviceRegister := range r.storage[vehicleID] {
+		if serviceRegister.ID == serviceRegisterID {
+			return &serviceRegister, nil
+		}
+	}
+
+	return nil, adapters.ErrNotFound
+}

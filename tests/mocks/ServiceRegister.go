@@ -14,6 +14,36 @@ type ServiceRegister struct {
 	mock.Mock
 }
 
+// Get provides a mock function with given fields: ctx, vehicleID, serviceRegisterID
+func (_m *ServiceRegister) Get(ctx context.Context, vehicleID entities.VehicleID, serviceRegisterID entities.ServiceRegisterID) (*entities.ServiceRegister, error) {
+	ret := _m.Called(ctx, vehicleID, serviceRegisterID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
+
+	var r0 *entities.ServiceRegister
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, entities.VehicleID, entities.ServiceRegisterID) (*entities.ServiceRegister, error)); ok {
+		return rf(ctx, vehicleID, serviceRegisterID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, entities.VehicleID, entities.ServiceRegisterID) *entities.ServiceRegister); ok {
+		r0 = rf(ctx, vehicleID, serviceRegisterID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entities.ServiceRegister)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, entities.VehicleID, entities.ServiceRegisterID) error); ok {
+		r1 = rf(ctx, vehicleID, serviceRegisterID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetAll provides a mock function with given fields: ctx, vehicleID
 func (_m *ServiceRegister) GetAll(ctx context.Context, vehicleID entities.VehicleID) ([]entities.ServiceRegister, error) {
 	ret := _m.Called(ctx, vehicleID)

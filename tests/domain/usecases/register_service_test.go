@@ -25,7 +25,7 @@ func TestRegisterService(t *testing.T) {
 		vehicleErr   error
 		service      *entities.Service
 		serviceErr   error
-		km           *entities.Km
+		km           entities.Km
 		shouldSaveKm bool
 		kmSaveErr    error
 		kmList       entities.KmList
@@ -37,17 +37,20 @@ func TestRegisterService(t *testing.T) {
 		{
 			name:       "vehicle service fails",
 			vehicleErr: anError,
+			km:         km,
 			err:        anError,
 		},
 		{
 			name:       "service service fails",
 			vehicle:    &vehicle,
+			km:         km,
 			serviceErr: anError,
 			err:        anError,
 		},
 		{
 			name:      "km service fails",
 			vehicle:   &vehicle,
+			km:        km,
 			service:   service,
 			kmListErr: anError,
 			err:       anError,
@@ -56,7 +59,7 @@ func TestRegisterService(t *testing.T) {
 			name:    "invalid km should throw invalid km data error",
 			vehicle: &vehicle,
 			service: service,
-			km:      &km,
+			km:      km,
 			kmList:  entities.KmList{dsl.NewValidKmOne()},
 			err:     usecases.ErrInvalidKmData,
 		},
@@ -64,7 +67,7 @@ func TestRegisterService(t *testing.T) {
 			name:         "km service fails when saving",
 			vehicle:      &vehicle,
 			service:      service,
-			km:           &km,
+			km:           km,
 			kmList:       entities.KmList{},
 			shouldSaveKm: true,
 			kmSaveErr:    anError,
@@ -74,7 +77,7 @@ func TestRegisterService(t *testing.T) {
 			name:         "service register service fails",
 			vehicle:      &vehicle,
 			service:      service,
-			km:           &km,
+			km:           km,
 			kmList:       entities.KmList{},
 			shouldSaveKm: true,
 			shouldSave:   true,
@@ -84,7 +87,7 @@ func TestRegisterService(t *testing.T) {
 			name:         "service register with no km history should save successfully",
 			vehicle:      &vehicle,
 			service:      service,
-			km:           &km,
+			km:           km,
 			kmList:       entities.KmList{},
 			shouldSaveKm: true,
 			expected:     &serviceRegister,
@@ -94,11 +97,15 @@ func TestRegisterService(t *testing.T) {
 			name:         "service register with km history should save successfully",
 			vehicle:      &vehicle,
 			service:      service,
-			km:           &km,
+			km:           km,
 			shouldSaveKm: true,
 			kmList:       entities.KmList{dsl.NewValidKmTwo()},
 			expected:     &serviceRegister,
 			shouldSave:   true,
+		},
+		{
+			name: "service register with invalid km should throw invalid km data error",
+			err:  entities.ErrKmHasZeroValue,
 		},
 	}
 
@@ -132,10 +139,10 @@ func TestRegisterService(t *testing.T) {
 			}
 
 			if test.shouldSaveKm && test.kmSaveErr != nil {
-				kmService.On("Save", ctx, vehicle.ID, dsl.AnythingOfType(km)).Return(test.kmSaveErr)
+				kmService.On("Save", ctx, vehicle.ID, dsl.AnythingOfType(test.km)).Return(test.kmSaveErr)
 			}
 			if test.shouldSaveKm && test.kmSaveErr == nil {
-				kmService.On("Save", ctx, vehicle.ID, dsl.AnythingOfType(km)).Return(nil)
+				kmService.On("Save", ctx, vehicle.ID, dsl.AnythingOfType(test.km)).Return(nil)
 			}
 
 			if test.shouldSave && test.err != nil {
@@ -152,7 +159,7 @@ func TestRegisterService(t *testing.T) {
 				kmService,
 			)
 
-			result, err := usecase.Execute(ctx, vehicle.ID, service.ID, km)
+			result, err := usecase.Execute(ctx, vehicle.ID, service.ID, test.km)
 
 			assert.Equal(test.err, err)
 			if test.expected != nil {

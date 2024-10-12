@@ -35,6 +35,10 @@ func (r RegisterService) Execute(
 	serviceID entities.ServiceID,
 	km entities.Km,
 ) (*entities.ServiceRegister, error) {
+	if err := km.Validate(); err != nil {
+		return nil, err
+	}
+
 	vehicle, err := r.vehicleAdapter.Get(ctx, vehicleID)
 	if err != nil {
 		return nil, err
