@@ -40,14 +40,8 @@ func (r RegisterKm) Execute(ctx context.Context, vehicleID entities.VehicleID, k
 		return nil, err
 	}
 
-	if len(kms) > 0 {
-		for _, k := range kms {
-			if k.Date.Equal(km.Date) || k.Value == km.Value ||
-				(km.Date.After(k.Date) && km.Value < k.Value) ||
-				(km.Date.Before(k.Date) && km.Value > k.Value) {
-				return nil, ErrInvalidKmData
-			}
-		}
+	if kms.ValidateConsistency(km) != entities.KmValidationSuccess {
+		return nil, ErrInvalidKmData
 	}
 
 	km.ID = entities.KmID(nanoid.New())

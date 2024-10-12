@@ -54,21 +54,22 @@ go tool cover -func=$COVERAGE_FILE_FILTERED
 
 # Genera el resultado en formato html si no se corre en el ci
 if [ -z "$CI" ] || [ "$CI" != "true" ]; then
-  gocov convert $COVERAGE_FILE_FILTERED | gocov-html -t kit > $COVERAGE_REPORT
+  gocov convert $COVERAGE_FILE_FILTERED | gocov-html -t kit -cmax 99 > $COVERAGE_REPORT
 fi
 
 # Obtiene el porcentaje total de la cobertura
-COVERAGE_PERCENTAGE=$(go tool cover -func=$COVERAGE_FILE_FILTERED | grep total | awk '{print int($3)}')
+RAW_COVERAGE_PERCENTAGE=$(go tool cover -func=$COVERAGE_FILE_FILTERED | grep total | awk '{print $3}')
+COVERAGE_PERCENTAGE=$(echo "$RAW_COVERAGE_PERCENTAGE" | awk '{print int($1)}')
 
 # Muestra un mensajes según el porcentaje de cobertura
 if [ "$COVERAGE_PERCENTAGE" -eq 100 ]; then
   echo "Wow! 100% coverage, it's awesome! 😍"
 elif [ "$COVERAGE_PERCENTAGE" -ge 80 ]; then
-  echo "$COVERAGE_PERCENTAGE% - Coverage is looking good! 😇 Keep it up! 😎"
+  echo "$RAW_COVERAGE_PERCENTAGE - Coverage is looking good! 😇 Keep it up! 😎"
 elif [ "$COVERAGE_PERCENTAGE" -ge 70 ]; then
-  echo "$COVERAGE_PERCENTAGE% - Hmm, didn't quite reach the 80% coverage goal, but close! 😅 Keep pushing! 💪"
+  echo "$RAW_COVERAGE_PERCENTAGE - Hmm, didn't quite reach the 80% coverage goal, but close! 😅 Keep pushing! 💪"
   exit 1
 else
-  echo "$COVERAGE_PERCENTAGE% - Uh oh, coverage seems a bit low... 💩"
+  echo "$RAW_COVERAGE_PERCENTAGE - Uh oh, coverage seems a bit low... 💩"
   exit 1
 fi

@@ -14,7 +14,8 @@ var (
 type (
 	vehicleData struct {
 		entities.Vehicle
-		RegisteredKm []entities.Km `json:"registered_km"`
+		RegisteredKm     entities.KmList            `json:"registered_km"`
+		ServiceRegisters []entities.ServiceRegister `json:"registered_services"`
 	}
 	localData struct {
 		Vehicle  []vehicleData      `json:"vehicle"`

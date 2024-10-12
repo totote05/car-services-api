@@ -8,12 +8,12 @@ import (
 )
 
 type km struct {
-	storage map[entities.VehicleID][]entities.Km
+	storage map[entities.VehicleID]entities.KmList
 }
 
 func NewKm() adapters.Km {
 	ld := getLocalData()
-	storage := map[entities.VehicleID][]entities.Km{}
+	storage := map[entities.VehicleID]entities.KmList{}
 
 	for _, vehicle := range ld.Vehicle {
 		storage[vehicle.ID] = vehicle.RegisteredKm
@@ -24,9 +24,9 @@ func NewKm() adapters.Km {
 	}
 }
 
-func (k *km) GetAll(ctx context.Context, vehicleID entities.VehicleID) ([]entities.Km, error) {
+func (k *km) GetAll(ctx context.Context, vehicleID entities.VehicleID) (entities.KmList, error) {
 	if _, ok := k.storage[vehicleID]; !ok {
-		return []entities.Km{}, nil
+		return entities.KmList{}, nil
 	}
 
 	return k.storage[vehicleID], nil
@@ -34,7 +34,7 @@ func (k *km) GetAll(ctx context.Context, vehicleID entities.VehicleID) ([]entiti
 
 func (k *km) Save(ctx context.Context, vehicleID entities.VehicleID, km entities.Km) error {
 	if _, ok := k.storage[vehicleID]; !ok {
-		k.storage[vehicleID] = []entities.Km{}
+		k.storage[vehicleID] = entities.KmList{}
 	}
 
 	for i, value := range k.storage[vehicleID] {

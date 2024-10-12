@@ -19,7 +19,7 @@ func NewGetKms(kmAdapter adapters.Km, vehicleAdapter adapters.Vehicle) GetKms {
 	}
 }
 
-func (r GetKms) Execute(ctx context.Context, vehicleID entities.VehicleID) ([]entities.Km, error) {
+func (r GetKms) Execute(ctx context.Context, vehicleID entities.VehicleID) (entities.KmList, error) {
 	vehicle, err := r.vehicleAdapter.Get(ctx, vehicleID)
 	if err != nil {
 		return nil, err
